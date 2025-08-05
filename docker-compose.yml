@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0
+    container_name: mosquitto_broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      -./mosquitto/config:/mosquitto/config
+      -./mosquitto/data:/mosquitto/data
+      -./mosquitto/log:/mosquitto/log
+
+  flask-app:
+    build: ./backend
+    container_name: flask_iot_app
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mqtt-broker
