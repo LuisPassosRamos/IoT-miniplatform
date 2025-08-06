@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard IoT</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
+        .chart-container { width: 80%; max-width: 900px; margin-top: 20px; }
+        #alert-box { margin-top: 20px; padding: 15px; border-radius: 5px; font-size: 1.2em; text-align: center; display: none; }
+        .alert-on { background-color: #ffcdd2; color: #c62828; display: block !important; }
+        .alert-off { background-color: #c8e6c9; color: #2e7d32; display: block !important; }
+    </style>
+</head>
+<body>
+    <h1>Monitoramento de Temperatura em Tempo Real</h1>
+    <div class="chart-container">
+        <canvas id="temperatureChart"></canvas>
+    </div>
+    <div id="alert-box">Status do Alerta</div>
+    <p>Média Móvel: <b id="moving-avg">N/A</b></p>
+
+    <script>
+        const API_URL = 'http://localhost:5001/api/data';
+        const API_TOKEN = 'my-super-secret-iot-token'; // O mesmo token do backend
+        const alertBox = document.getElementById('alert-box');
+        const movingAvgEl = document.getElementById('moving-avg');
+
+        // Configuração inicial do gráfico
+        const ctx = document.getElementById('temperatureChart').getContext('2d');
+        const tempChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Temperatura (°C)',
+                    data: [],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderWidth: 2,
+                    fill: true,
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Horário da Leitura' }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        title: { display: true, text: 'Temperatura' }
+                    }
+                }
+            }
+        });
+
+        // Função para buscar dados da API e atualizar o dashboard
+        async function fetchData() {
+            try {
+                const response = await fetch(API_URL, {
+                    headers: {
+                        'Authorization': `Bearer ${API_TOKEN}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                const readings = result.sensor_readings;
+                
+                // Limita a 20 pontos no gráfico para não poluir a tela
+                const last20Readings = readings.slice(-20);
+
+                // Atualiza os dados do gráfico
+                tempChart.data.labels = last20Readings.map(d => new Date(d.timestamp * 1000).toLocaleTimeString());
+                tempChart.data.datasets[0].data = last20Readings.map(d => d.value);
+                tempChart.update();
+
+                // Atualiza a análise
+                const analysis = result.analysis;
+                movingAvgEl.textContent = analysis.temperature_moving_average !== null ? `${analysis.temperature_moving_average} °C` : 'Calculando...';
+
+                // Atualiza o alerta visual
+                if (analysis.high_temp_alert) {
+                    alertBox.textContent = 'ALERTA: Temperatura elevada detectada!';
+                    alertBox.className = 'alert-on';
+                } else {
+                    alertBox.textContent = 'Status: Normal';
+                    alertBox.className = 'alert-off';
+                }
+
+            } catch (error) {
+                console.error('Falha ao buscar dados:', error);
+                alertBox.textContent = 'Erro de conexão com a API.';
+                alertBox.className = 'alert-on';
+            }
+        }
+
+        // Busca dados a cada 5 segundos
+        setInterval(fetchData, 5000);
+        // Busca dados na primeira vez que a página carrega
+        fetchData();
+    </script>
+</body>
+</html>

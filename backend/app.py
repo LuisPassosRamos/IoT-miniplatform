@@ -8,13 +8,15 @@ import time
 # --- CONFIGURAÇÃO ---
 app = Flask(__name__)
 
-# Configuração do Broker MQTT
-app.config = 'mqtt-broker'  # Nome do serviço no docker-compose
-app.config = 1883
-app.config = ''
-app.config = ''
-app.config = 5
-app.config = False
+from flask_cors import CORS
+CORS(app)
+
+app.config['MQTT_BROKER_URL'] = 'mqtt-broker' 
+app.config['MQTT_BROKER_PORT'] = 1883
+app.config['MQTT_USERNAME'] = ''  # Defina se o broker exigir
+app.config['MQTT_PASSWORD'] = ''  # Defina se o broker exigir
+app.config['MQTT_KEEPALIVE'] = 5  # Keepalive em segundos
+app.config['MQTT_TLS_ENABLED'] = False
 
 MQTT_TOPIC = "iot/sensors"
 SECRET_TOKEN = "my-super-secret-iot-token"

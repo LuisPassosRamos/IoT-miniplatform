@@ -8,9 +8,9 @@ services:
       - "1883:1883"
       - "9001:9001"
     volumes:
-      -./mosquitto/config:/mosquitto/config
-      -./mosquitto/data:/mosquitto/data
-      -./mosquitto/log:/mosquitto/log
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
 
   flask-app:
     build: ./backend

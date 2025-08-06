@@ -3,7 +3,7 @@ import time
 import json
 import random
 
-MQTT_BROKER_HOST = "localhost"
+MQTT_BROKER_HOST = "mqtt-broker"
 MQTT_BROKER_PORT = 1883
 MQTT_TOPIC = "iot/sensors"
 CLIENT_ID = f"python-mqtt-sensor-{random.randint(0, 1000)}"
