@@ -3,19 +3,19 @@ import time
 import json
 import random
 
-MQTT_BROKER_HOST = "mqtt-broker"
+MQTT_BROKER_HOST = "localhost"
 MQTT_BROKER_PORT = 1883
 MQTT_TOPIC = "iot/sensors"
 CLIENT_ID = f"python-mqtt-sensor-{random.randint(0, 1000)}"
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
         print("Conectado ao Broker MQTT com sucesso!")
     else:
         print(f"Falha na conexão, código de retorno: {rc}\n")
 
 def run_sensor():
-    client = mqtt.Client(client_id=CLIENT_ID)
+    client = mqtt.Client(client_id=CLIENT_ID, protocol=mqtt.MQTTv5)
     client.on_connect = on_connect
     
     try:

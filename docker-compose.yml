@@ -19,3 +19,5 @@ services:
       - "5001:5001"
     depends_on:
       - mqtt-broker
+    volumes:
+      - ./backend:/app
